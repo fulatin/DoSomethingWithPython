@@ -90,17 +90,17 @@ from tensorflow import keras
 
 model = keras.Sequential(
         [
-            keras.layers.Conv2D(10,3,activation=keras.activations.relu,padding="SAME"),
-            keras.layers.Conv2D(5,3,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(32,3,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(16,3,activation=keras.activations.relu,padding="SAME"),
             keras.layers.AvgPool2D(strides=2,padding="SAME"),
-            keras.layers.Conv2D(10,2,activation=keras.activations.relu,padding="SAME"),
-            keras.layers.Conv2D(5,2,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(16,2,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(8,2,activation=keras.activations.relu,padding="SAME"),
             keras.layers.AvgPool2D(strides=2,padding="SAME"),
-            keras.layers.Conv2D(10,2,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(8,2,activation=keras.activations.relu,padding="SAME"),
             keras.layers.AvgPool2D(strides=1,padding="SAME"),
             keras.layers.Flatten(),
-            keras.layers.Dense(256,activation=keras.activations.relu),
-            keras.layers.Dense(64,activation=keras.activations.relu),
+            keras.layers.Dense(32,activation=keras.activations.relu),
+            keras.layers.Dense(16,activation=keras.activations.relu),
             keras.layers.Dense(16,activation=keras.activations.relu),
             keras.layers.Dense(10,activation=keras.activations.softmax)
         ]
@@ -112,30 +112,34 @@ def Train():
     data = keras.datasets.mnist.load_data()
     callback = keras.callbacks.TensorBoard(histogram_freq=10,update_freq=1,write_images=True)
     callback.model= model
-    model.fit(tf.reshape(tf.cast( data[0][0]/255,tf.float32),[-1,28,28,1]),data[0][1],128,20,callbacks=[callback])
-    model.save("./ckpt")
+    model.fit(tf.reshape(tf.cast( data[0][0]/255,tf.float32),[-1,28,28,1]),data[0][1],128,10)#,callbacks=[callback]
+    model.save("./ckpt.h5")
 def pridict(pridictimg):
-    model.load_weights("./ckpt")
-    model.predict(pridictimg)
+    model.build([1,28,28,1])
+    model.load_weights("./ckpt.h5")
+    res=model.predict(pridictimg)
+    print(res,tf.argmax(res,1).numpy())
 
 
-if __name__=="__main__":
-    #img= keras.preprocessing.image.load_img("./numb1.jpg",color_mode = "grayscale")
-    img= cv2.imread("./img/numb1.jpg")
+'''
+将[28,28,3]的图片处理成[1,28,28,1]的灰度图张量
+'''
+def img_precess(img):
     img_rel = []
     for i in img:
         temp = []
         for j in i:
-            temp2 = []
-            if j[0]==0:
-                temp2.append(1)
-            else:
-                temp2.append(0)
-            temp.append(temp2)
+            temp.append([(255-(j[0]+j[1]+j[2])/3.0)/255.0])
 
         img_rel.append(temp)
-    imgrel=tf.constant(img_rel).numpy()
-    pridict(imgrel)
+    imgrel=tf.reshape(tf.constant(img_rel),[1,28,28,1]).numpy()
+    return imgrel
+if __name__=="__main__":
+    #Train()
+    img= keras.preprocessing.image.load_img("./img/1 .jpg",target_size=(28,28))
+    img = keras.preprocessing.image.img_to_array(img)
+    # print(img_precess(img).shape)
+    pridict(img_precess(img))
 
 
 
