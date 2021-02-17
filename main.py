@@ -9,16 +9,14 @@ from tensorflow import keras
 
 model = keras.Sequential(
         [
-            keras.layers.Conv2D(32,3,activation=keras.activations.relu,padding="SAME"),
-            keras.layers.Conv2D(16,3,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(64,3,activation=keras.activations.relu,padding="SAME",kernel_regularizer=keras.regularizers.l1()),
+            keras.layers.Conv2D(56,3,activation=keras.activations.relu,padding="SAME"),
             keras.layers.MaxPool2D(strides=2,padding="SAME"),
-            keras.layers.Conv2D(16,3,activation=keras.activations.relu,padding="SAME"),
-            keras.layers.Conv2D(8,3,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(28,3,activation=keras.activations.relu,padding="SAME"),
+            keras.layers.Conv2D(28,3,activation=keras.activations.relu,padding="SAME"),
             keras.layers.MaxPool2D(strides=2,padding="SAME"),
-            keras.layers.Conv2D(8,3,activation=keras.activations.relu,padding="SAME"),
-            keras.layers.MaxPool2D(strides=1,padding="SAME"),
             keras.layers.Flatten(),
-            keras.layers.Dense(64,activation=keras.activations.relu),
+            keras.layers.Dense(64,activation=keras.activations.relu,kernel_regularizer=keras.regularizers.l1()),
             keras.layers.Dropout(0.2),
             keras.layers.Dense(32,activation=keras.activations.relu),
             keras.layers.Dense(10,activation=keras.activations.softmax)
@@ -30,7 +28,7 @@ def Train():
     data = keras.datasets.mnist.load_data()
     callback = keras.callbacks.TensorBoard(histogram_freq=100,update_freq=1,write_images=True)
     callback.model= model
-    model.fit(tf.reshape(tf.cast( data[0][0]/255,tf.float32),[-1,28,28,1]),data[0][1],128,10,callbacks=[callback])#,callbacks=[callback]
+    model.fit(tf.reshape(tf.cast( data[0][0]/255,tf.float32),[-1,28,28,1]),data[0][1],64,4)#,callbacks=[callback]
     model.save("./ckpt.h5")
 
 
@@ -63,4 +61,4 @@ if __name__=="__main__":
     pridict(img_precess(img))
 
 
-
+ 
